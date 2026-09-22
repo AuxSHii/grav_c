@@ -11,6 +11,12 @@ though initial assigning random velocities and position , and let the particles 
 particles move wrt the gravitional pulls from each other . | code has an N-Body failsafe that clamps the velocity or the speed in given (x,y) directions. 
 
 
+
+
+
+<img width="594" height="309" alt="orbiters" src="https://github.com/user-attachments/assets/d7ce6632-7f7d-4124-99b3-de4215faf3c6" />
+
+
 right now , i have an inviible grid of height and width , if a particle collides to the screen bounds , it gets terminated.
 
 also : the trail length is 8 dots | hard coded but it doesn't render every one of them , because :
@@ -35,6 +41,9 @@ implementations yet:
 6.Orbital mechanics — tangential velocity, the sqrt(GM/r) relationship
 7.numerical-stability bug due to units/magnitudes.
 8.colors and dot trails for particles with the help of circular queue.
+
 9.user interaction - pressing n- spwan particles with  rand val of velocties and positions [screen-bounded]
   through Non-blocking input Non-blocking input _kbhit and _getch
 10. memory alloc for acceleration array and particle-array are runtime now. i.e. through maloc.
+
+
