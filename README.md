@@ -4,6 +4,12 @@ though initial assigning random velocities and position , and let the particles 
 particles move wrt the gravitional pulls from each other . | code has an N-Body failsafe that clamps the velocity or the speed in given (x,y) directions. 
 
 
+
+
+
+<img width="594" height="309" alt="orbiters" src="https://github.com/user-attachments/assets/d7ce6632-7f7d-4124-99b3-de4215faf3c6" />
+
+
 right now , i have an inviible grid of height and width , if a particle collides to the screen bounds , it gets terminated.
 
 also : the trail length is 8 dots | hard coded but it doesn't render every one of them , because :
