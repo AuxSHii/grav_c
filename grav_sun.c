@@ -49,6 +49,76 @@ void enable_ansi() {
 	SetConsoleMode(hOut , dwMode); 
 }
 
+//program title screen
+void draw_atom_frame(double angle) {
+    char grid[15][40];
+    for (int y = 0; y < 15; y++)
+        for (int x = 0; x < 40; x++)
+            grid[y][x] = ' ';
+
+    int cx = 20, cy = 7; // center of the grid
+
+    grid[cy][cx] = '@'; // nucleus, fixed center
+
+    // 3 electrons, each on a differently-squished, differently-offset ring
+    double offsets[3] = {0, 2.1, 4.2}; // spread evenly (roughly 120 degrees apart in radians)
+    double squish[3]  = {1.0, 0.4, 0.4}; // ring 1 = wide ellipse, rings 2/3 = tighter ellipses
+
+    for (int e = 0; e < 3; e++) {
+        double a = angle + offsets[e];
+        int ex = cx + (int)(cos(a) * 15);
+        int ey = cy + (int)(sin(a) * 5 * squish[e]);
+
+        if (ex >= 0 && ex < 40 && ey >= 0 && ey < 15) {
+            grid[ey][ex] = 'o';
+        }
+    }
+
+    printf("\033[H");
+    for (int y = 0; y < 15; y++) {
+        for (int x = 0; x < 40; x++) {
+            char c = grid[y][x];
+            if (c == '@') printf("\033[33m%c\033[0m", c);
+            else if (c == 'o') printf("\033[36m%c\033[0m", c);
+            else putchar(c);
+        }
+        putchar('\n');
+    }
+}
+
+//screen fxn to play atom
+
+void show_title_screen() {
+    printf("\033[2J");
+    double angle = 0;
+
+    for (int frame = 0; frame < 60; frame++) {
+        draw_atom_frame(angle);
+        angle += 0.15;
+        Sleep(33);
+    }
+
+    printf("\033[2J\033[H");
+    printf("\033[36m");
+
+    printf("                    ========================================\n");
+    printf("                      ____  ____   ____ ___ _____ \n");
+    printf("                     / __ \\|  _ \\ | __ )_ _|_   _|\n");
+    printf("                    | |  | | |_) ||  _ \\| |  | |  \n");
+    printf("                    | |__| |  _ < | |_) | |  | |  \n");
+    printf("                     \\____/|_| \\_\\|____/___| |_|  \n");
+    printf("                       a terminal gravity sandbox\n");
+    printf("                    ========================================\n");
+    printf("\033[0m");
+
+    printf("\n\033[90m                              - ashi\033[0m\n");
+    printf("\n                    Press any key to continue...");
+    _getch();
+}
+
+
+
+
 //FXN spawn particle -> void / modify the particle arr
 
 void spawn_particle(Particle particles[], int index) {
@@ -283,6 +353,9 @@ void record_trail(Particle particles[] , int count) {
 int main() {
 
 	enable_ansi();  //to enable asni adn vitual terminal proceses in terminal!
+     
+    show_title_screen();  //start program . title screen
+
 	srand(time(NULL));  //to get same rnad no: every run!
 
     
