@@ -3,6 +3,10 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
+#include <conio.h>   //to read key inputs
+
+#define MAX_PARTICLES 50
+#define INITIAL_PARTICLES 5
 
 #define G 0.05  //grav constant | not irl value
 
@@ -11,7 +15,6 @@
 #endif
 
 
-#define NUM_PARTICLES 5
 #define WIDTH 80
 #define HEIGHT 24
 
@@ -46,6 +49,43 @@ void enable_ansi() {
 	SetConsoleMode(hOut , dwMode); 
 }
 
+//FXN spawn particle -> void / modify the particle arr
+
+void spawn_particle(Particle particles[], int index) {
+	double angle = ((double)rand() / RAND_MAX) * 2 * M_PI;
+
+	double dist = 5 + (rand() % 15);
+
+	//giving it some posn
+	particles[index].x = particles[0].x + cos(angle) * dist;
+    particles[index].y = particles[0].y + sin(angle) * dist;
+
+    double orbital_speed = sqrt(G * particles[0].mass / dist);
+    
+    particles[index].vx = -sin(angle) * orbital_speed;
+    particles[index].vy = cos(angle) * orbital_speed;
+
+    particles[index].mass = 1.0;
+    particles[index].symbol = 'o';
+
+
+    for (int t = 0; t < TRAIL_LENGTH; t++) {  //for evry trail indx
+        particles[index].trail_x[t] = particles[index].x; //init with spawning posn
+        particles[index].trail_y[t] = particles[index].y;
+    }
+    particles[index].trail_index = 0;
+
+
+}
+
+
+
+
+
+
+
+
+
 //sun - fixed posn | orbitar v corresponding to dist btw sun and their own  
  // velocity must be perp to the line from sun to orbiter. / tangential to citcular trajectory/path
   // Vorb = √ (G * mass(sun) / dist) 
@@ -67,46 +107,17 @@ void init_particles(Particle particles[], int count) {
 	particles[0].symbol = '@';    //later can use unicode '⬤'
   
     
-    //rest [1-5] particles are orbiters
-	for (int i = 1; i < count; i++) //loop over each particle. 
-	{
-        
-        double angle = ((double)rand() / RAND_MAX) * 2 * M_PI; //random angle around sun
-
-        double dist = 5 + (rand() % 15); //rasndm dist from sun (5-20)
-
-        particles[i].x = particles[0].x + cos(angle) * dist;
-        particles[i].y = particles[0].y + sin(angle) * dist;
-
-        double orbital_speed = sqrt(G * particles[0].mass / dist);
-        
-        //velocity perp to radius vector = tangent direction
-        particles[i].vx = -sin(angle) * orbital_speed;
-        particles[i].vy = cos(angle) * orbital_speed;
-
-
-
-		particles[i].mass = 1.0;
-		particles[i].symbol = 'o';
-	}
-
-    //init trail history/circ queue for every particle inc sun!
-    for (int i = 0; i < count; i++)  //for evry particle
+    //call spawn particles 
+    for (int t = 0; t < TRAIL_LENGTH; t++)
     {
-    	for (int t = 0; t < TRAIL_LENGTH; t++)  //for evry index in trail arr
-    	{
-    		particles[i].trail_x[t] = particles[i].x;  //spawn posn once particle init
-    		particles[i].trail_y[t] = particles[i].y;
-    	}
-
-    	particles[i].trail_index = 0;
+    	particles[0].trail_x[t] = particles[0].x;
+    	particles[0].trail_y[t] = particles[0].y;
     }
+    particles[0].trail_index = 0;
 
-
-
-
-
-
+    for (int i = 1; i < count; i++) {
+        spawn_particle(particles, i);
+    }
 
 
 }
@@ -274,24 +285,54 @@ int main() {
 	enable_ansi();  //to enable asni adn vitual terminal proceses in terminal!
 	srand(time(NULL));  //to get same rnad no: every run!
 
-	Particle particles[NUM_PARTICLES];
-	init_particles(particles , NUM_PARTICLES);
+    
+    Particle *particles = malloc(sizeof(Particle) * MAX_PARTICLES);  //alloc max mem to be needed
+    //error resolving of mem alloc fail
+    if (particles == NULL)
+    {
+    	printf("Failed to allocate memory\n");
+    	return 1;
+    }
+    
+    int active_count = INITIAL_PARTICLES;  //present number of particles req by user
 
-    double ax[NUM_PARTICLES]; //temp accn array
-    double ay[NUM_PARTICLES];
+
+	init_particles(particles , active_count);
+
+    double *ax = malloc(sizeof(double) * MAX_PARTICLES); //temp accn array mem allooc at runtime
+    double *ay = malloc(sizeof(double) * MAX_PARTICLES);
 
 
 	printf("\033[2J");  //clear screeen once
 
 	while(1) {  //indef loop
-		record_trail(particles , NUM_PARTICLES);
-		compute_forces(particles , NUM_PARTICLES , ax , ay);
 
-	    update_positions(particles , NUM_PARTICLES, ax , ay);
-	    render(particles , NUM_PARTICLES);
+      if (_kbhit())   //if true then some key is pressed
+      {
+      	char key = _getch();  // store that key
+        
+        if (key == 'n' && active_count < MAX_PARTICLES) 
+        {
+        	spawn_particle(particles , active_count);
+        	active_count++;
+        }
+
+
+      }
+
+
+		record_trail(particles , active_count);
+		compute_forces(particles , active_count , ax , ay);
+
+	    update_positions(particles , active_count, ax , ay);
+	    render(particles , active_count);
 	    Sleep(33);  //sleep for 33ms | 30fps around 
 
 	}
+                    
+   free(particles);  //free mem alloctd at runtime[heap] whch is npt stack mem
+   free(ax);
+   free(ay);
   return 0; 
 }
 

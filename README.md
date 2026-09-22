@@ -1,5 +1,12 @@
 # grav_c
-a simple particle-gravity simulation  cli written in C .  
+a simple particle-gravity simulation  cli written in C .
+
+
+pressing n = will spawn particles 
+max number of particles  = 50;
+
+
+
 though initial assigning random velocities and position , and let the particles move with velocity in a 2d grid inside the terminal..
 particles move wrt the gravitional pulls from each other . | code has an N-Body failsafe that clamps the velocity or the speed in given (x,y) directions. 
 
@@ -28,3 +35,6 @@ implementations yet:
 6.Orbital mechanics — tangential velocity, the sqrt(GM/r) relationship
 7.numerical-stability bug due to units/magnitudes.
 8.colors and dot trails for particles with the help of circular queue.
+9.user interaction - pressing n- spwan particles with  rand val of velocties and positions [screen-bounded]
+  through Non-blocking input Non-blocking input _kbhit and _getch
+10. memory alloc for acceleration array and particle-array are runtime now. i.e. through maloc.
