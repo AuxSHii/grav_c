@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define G 0.5  //grav constant | not irl value
+#define G 0.05  //grav constant | not irl value
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -19,7 +19,11 @@
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
-//typedefining struct for a particle [velocity , posn , mass , symbol]
+//typedefining struct for a particle [velocity , posn , mass , symbol]     
+  //ds - history buufer - fixed size arr as queue = posn of previous frame get overwritten as particle moves / i.e. each frame
+   //circular buffer = updating posn at frame array
+    //trail_index = (trail_index + 1) % TRAIL_LENGTH ->to overwrite the oldenst entry
+#define TRAIL_LENGTH 8
 
 typedef struct 
 {
@@ -27,6 +31,10 @@ typedef struct
 	double vx , vy;
 	double mass;
 	char symbol;
+
+	double trail_x[TRAIL_LENGTH]; //trail posns array 
+	double trail_y[TRAIL_LENGTH];
+	int trail_index;     //where to write the 'next' position
 } Particle ;
 
 //fxn to enable asni in old cmds 
@@ -55,7 +63,7 @@ void init_particles(Particle particles[], int count) {
 	particles[0].y = HEIGHT / 2.0;
 	particles[0].vx = 0;
 	particles[0].vy = 0;
-	particles[0].mass = 5000.0; //much heavier then orbtrs
+	particles[0].mass = 20.0; //much heavier then orbtrs
 	particles[0].symbol = '@';    //later can use unicode '⬤'
   
     
@@ -81,6 +89,26 @@ void init_particles(Particle particles[], int count) {
 		particles[i].mass = 1.0;
 		particles[i].symbol = 'o';
 	}
+
+    //init trail history/circ queue for every particle inc sun!
+    for (int i = 0; i < count; i++)  //for evry particle
+    {
+    	for (int t = 0; t < TRAIL_LENGTH; t++)  //for evry index in trail arr
+    	{
+    		particles[i].trail_x[t] = particles[i].x;  //spawn posn once particle init
+    		particles[i].trail_y[t] = particles[i].y;
+    	}
+
+    	particles[i].trail_index = 0;
+    }
+
+
+
+
+
+
+
+
 }
 //fxn update posn(*partlicle arr) -> updated posn rest same array
 //return void! //within sceen bounds!
@@ -106,6 +134,9 @@ void update_positions(Particle particles[], int count , double ax[] , double ay[
 }
 //fxn to rendergrid&particles(arry of particle) ->  print grid
   //grid of char woth hight and width
+    //RENDERING TRAIL -> render  trail on grid & live posn on top!
+
+
 void render(Particle particles[] , int count) {
     char grid[HEIGHT][WIDTH];
 
@@ -113,7 +144,35 @@ void render(Particle particles[] , int count) {
     for (int y = 0; y < HEIGHT; y++)
         for (int x = 0; x < WIDTH; x++)
         	grid[y][x] = ' '; //grid holding space
-   // plot each particle
+
+   // draw trails in background
+    for (int i = 0; i < count; i++) // for evry particle
+    {
+       for (int t = 0; t < TRAIL_LENGTH; t++)
+       {
+       	  int tx = (int)particles[i].trail_x[t]; //storing trail posn 
+          int ty = (int)particles[i].trail_y[t];
+
+          if (tx >= 0 && tx < WIDTH && ty >= 0 && ty < HEIGHT) 
+          {
+          	if (grid[ty][tx] == ' ')  // no overwriting / place trail dot only of there is space in grid.
+          	{
+          	 grid[ty][tx] = '.';
+          	}
+          }
+
+
+       }
+    }
+
+
+
+
+
+
+
+
+   // plot each live particle
     for (int i = 0; i < count; i++)
         	{
         	   int px = (int)particles[i].x;
@@ -131,13 +190,18 @@ void render(Particle particles[] , int count) {
    //print grid row by row!
       for (int y = 0; y < HEIGHT; y++)
       {
-      	for (int x = 0; x < WIDTH; x++)
-      	{
-      		putchar(grid[y][x]);
-      	}
-      	putchar('\n');
-      }
-
+      	for (int x = 0; x < WIDTH; x++)  {
+            char c = grid[y][x];
+            if (c == '@') {
+                printf("\033[33m%c\033[0m", c);   // yellow sun
+            } else if (c == 'o') {
+                printf("\033[36m%c\033[0m", c);   // cyan orbiter
+            } else {
+                putchar(c);   // blank space, no color needed
+            }
+        }
+        putchar('\n');
+    }
 }
 
 
@@ -181,6 +245,25 @@ void compute_forces(Particle particles[] , int count , double ax[] , double ay[]
 
 //then pson updates with rt accn
 
+//recording trail fxn -> void / modify each particle trail arr
+void record_trail(Particle particles[] , int count) {
+	for (int i = 0; i < count; i++)  //for every particle
+	{
+		particles[i].trail_x[particles[i].trail_index] = particles[i].x; //current x,y posn = trail arr[index]
+		particles[i].trail_y[particles[i].trail_index] = particles[i].y;
+        
+        particles[i].trail_index = (particles[i].trail_index + 1) % TRAIL_LENGTH;
+      //incremented index of trail arr by 1  
+        //arr will snap back at start/0 once index reaches 7!
+
+	}
+}
+
+
+
+
+
+
 
 
 
@@ -201,7 +284,9 @@ int main() {
 	printf("\033[2J");  //clear screeen once
 
 	while(1) {  //indef loop
+		record_trail(particles , NUM_PARTICLES);
 		compute_forces(particles , NUM_PARTICLES , ax , ay);
+
 	    update_positions(particles , NUM_PARTICLES, ax , ay);
 	    render(particles , NUM_PARTICLES);
 	    Sleep(33);  //sleep for 33ms | 30fps around 
