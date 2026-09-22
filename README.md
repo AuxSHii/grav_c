@@ -11,7 +11,9 @@ max number of particles  = 50;
 
 
 though initial assigning random velocities and position , and let the particles move with velocity in a 2d grid inside the terminal..
-particles move wrt the gravitional pulls from each other . | code has an N-Body failsafe that clamps the velocity or the speed in given (x,y) directions. 
+particles move wrt the gravitional pulls from each other
+and they ORBIT THE SUN= '@'
+. | code has an N-Body failsafe that clamps the velocity or the speed in given (x,y) directions. 
 
 
 
