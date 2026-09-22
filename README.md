@@ -5,6 +5,9 @@ a simple particle-gravity simulation  cli written in C .
 pressing n = will spawn particles 
 max number of particles  = 50;
 
+<img width="466" height="279" alt="final logo" src="https://github.com/user-attachments/assets/4fdc98bd-e025-404f-acf1-b951cd9b39fc" />
+
+
 
 
 though initial assigning random velocities and position , and let the particles move with velocity in a 2d grid inside the terminal..
