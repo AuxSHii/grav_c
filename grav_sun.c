@@ -40,6 +40,60 @@ typedef struct
 	int trail_index;     //where to write the 'next' position
 } Particle ;
 
+
+//Fxn to clear screen - ansi escape seq
+void clearScreen() {
+  printf("\e[1;1H\e[2J");  //ansi escape seq-> clear screen
+}
+
+
+
+
+//fxn to show menu -> int option taken from user
+
+int show_menu(){
+
+
+clearScreen();
+
+//show the menu
+    printf("========================================\n");
+    printf("   ORBIT - choose a mode\n");
+    printf("----------------------------------------\n");
+    printf("1) Single sun, calculated orbits\n");
+    printf("2) Binary suns\n");
+    printf("3) Free chaos\n");
+    printf("4) Sandbox mode\n");
+    printf("----------------------------------------\n");
+
+   int option = 0;
+
+   while(option < 1 || option > 4) {  //until valid opt are given
+       printf("choose an option (1-4): ");
+       char key = _getch();  //whateveer typed by user take it in key
+
+       printf("%c\n", key );  //echo key back
+       option = key - '0';   //convt char digit to int
+       
+   }
+
+   return option; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //fxn to enable asni in old cmds 
 void enable_ansi() {
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -101,18 +155,18 @@ void show_title_screen() {
     printf("\033[2J\033[H");
     printf("\033[36m");
 
-    printf("                    ========================================\n");
-    printf("                      ____  ____   ____ ___ _____ \n");
-    printf("                     / __ \\|  _ \\ | __ )_ _|_   _|\n");
-    printf("                    | |  | | |_) ||  _ \\| |  | |  \n");
-    printf("                    | |__| |  _ < | |_) | |  | |  \n");
-    printf("                     \\____/|_| \\_\\|____/___| |_|  \n");
-    printf("                       a terminal gravity sandbox\n");
-    printf("                    ========================================\n");
+    printf("                                     ========================================\n");
+    printf("                                       ____  ____   ____ ___ _____ \n");
+    printf("                                      / __ \\|  _ \\ | __ )_ _|_   _|\n");
+    printf("                                     | |  | | |_) ||  _ \\| |  | |  \n");
+    printf("                                     | |__| |  _ < | |_) | |  | |  \n");
+    printf("                                      \\____/|_| \\_\\|____/___| |_|  \n");
+    printf("                                        a terminal gravity sandbox\n");
+    printf("                                     ========================================\n");
     printf("\033[0m");
 
-    printf("\n\033[90m                              - ashi\033[0m\n");
-    printf("\n                    Press any key to continue...");
+    printf("\n\033[90m                                               - ashi\033[0m\n");
+    printf("\n                                     Press any key to continue...");
     _getch();
 }
 
@@ -353,10 +407,15 @@ void record_trail(Particle particles[] , int count) {
 int main() {
 
 	enable_ansi();  //to enable asni adn vitual terminal proceses in terminal!
-     
-    show_title_screen();  //start program . title screen
+  
 
-	srand(time(NULL));  //to get same rnad no: every run!
+
+  show_title_screen();  //start program . title screen
+
+
+  int choice = show_menu();
+
+ 	srand(time(NULL));  //to get same rnad no: every run!
 
     
     Particle *particles = malloc(sizeof(Particle) * MAX_PARTICLES);  //alloc max mem to be needed
@@ -367,10 +426,24 @@ int main() {
     	return 1;
     }
     
-    int active_count = INITIAL_PARTICLES;  //present number of particles req by user
+  int active_count = INITIAL_PARTICLES;  //present number of particles req by user
+
+  
+    if (choice == 1)
+    {
+      init_particles(particles , active_count); // single sun
+    }
+    else
+    {
+      printf("That nodes is'nt build yet - init single sun mode\n");
+      _getch();
+      init_particles(particles , active_count);
+    }
+
+    printf("you picked - now enter %d\n", choice);
+    _getch();
 
 
-	init_particles(particles , active_count);
 
     double *ax = malloc(sizeof(double) * MAX_PARTICLES); //temp accn array mem allooc at runtime
     double *ay = malloc(sizeof(double) * MAX_PARTICLES);
